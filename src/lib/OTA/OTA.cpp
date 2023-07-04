@@ -17,6 +17,9 @@ bool OtaIsFullRes;
 volatile uint8_t OtaNonce;
 uint16_t OtaCrcInitializer;
 OtaSwitchMode_e OtaSwitchModeCurrent;
+uint8_t tempAirportDataBuffer[ELRS8_TELEMETRY_BYTES_PER_CALL] = {0};
+uint8_t tempAirportDataBufferCount = 0;
+bool airportDataReceivedFlag = false;
 
 // CRC
 static Crc2Byte ota_crc;
@@ -580,7 +583,15 @@ void OtaUpdateSerializers(OtaSwitchMode_e const switchMode, uint8_t packetSize)
 }
 
 void OtaPackAirportData(OTA_Packet_s * const otaPktPtr, FIFO_GENERIC<AP_MAX_BUF_LEN>  * inputBuffer)
-{
+{        
+#if defined(TARGET_TX)
+    if (OtaNonce % ExpressLRS_currAirRate_Modparams->numOfSends == 1) // Assumes a tlm raitio 1:2
+        airportDataReceivedFlag = false;
+#else
+    if (OtaNonce % ExpressLRS_currAirRate_Modparams->numOfSends == ExpressLRS_currAirRate_Modparams->numOfSends - 1) // Assumes a tlm raitio 1:2
+        airportDataReceivedFlag = false;
+#endif
+
     uint8_t count = inputBuffer->size();
     if (OtaIsFullRes)
     {
@@ -590,15 +601,25 @@ void OtaPackAirportData(OTA_Packet_s * const otaPktPtr, FIFO_GENERIC<AP_MAX_BUF_
     }
     else
     {
-        count = std::min(count, (uint8_t)ELRS4_TELEMETRY_BYTES_PER_CALL);
-        otaPktPtr->std.airport.count = count;
-        inputBuffer->popBytes(otaPktPtr->std.airport.payload, count);
+        if (OtaNonce % ExpressLRS_currAirRate_Modparams->numOfSends == 1) // Assumes a tlm raitio 1:2
+        {
+            tempAirportDataBufferCount = std::min(count, (uint8_t)ELRS4_TELEMETRY_BYTES_PER_CALL);
+            inputBuffer->popBytes(tempAirportDataBuffer, tempAirportDataBufferCount);
+        }
+
+        otaPktPtr->std.airport.count = tempAirportDataBufferCount;
+        memcpy(otaPktPtr->std.airport.payload, tempAirportDataBuffer, tempAirportDataBufferCount);
         otaPktPtr->std.airport.type = ELRS_TELEMETRY_TYPE_DATA;
     }
 }
 
 void OtaUnpackAirportData(OTA_Packet_s const * const otaPktPtr, FIFO_GENERIC<AP_MAX_BUF_LEN>  * outputBuffer)
 {
+    if (airportDataReceivedFlag)
+        return;
+    
+    airportDataReceivedFlag = true;
+
     if (OtaIsFullRes)
     {
         uint8_t count = otaPktPtr->full.airport.count;
@@ -607,6 +628,10 @@ void OtaUnpackAirportData(OTA_Packet_s const * const otaPktPtr, FIFO_GENERIC<AP_
     else
     {
         uint8_t count = otaPktPtr->std.airport.count;
+        // if (airportDataReceivedFlag && count) // Debugging
+            // outputBuffer->push(36); // $ // Debugging
         outputBuffer->pushBytes(otaPktPtr->std.airport.payload, count);
     }
+
+    // airportDataReceivedFlag = true; // Debugging
 }

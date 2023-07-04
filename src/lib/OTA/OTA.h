@@ -187,6 +187,9 @@ typedef std::function<bool (OTA_Packet_s const * const otaPktPtr, uint32_t *chan
 extern UnpackChannelData_t OtaUnpackChannelData;
 #endif
 
+extern uint8_t tempAirportDataBuffer[ELRS8_TELEMETRY_BYTES_PER_CALL];
+extern uint8_t tempAirportDataBufferCount;
+extern bool airportDataReceivedFlag;
 void OtaPackAirportData(OTA_Packet_s * const otaPktPtr, FIFO_GENERIC<AP_MAX_BUF_LEN>  * inputBuffer);
 void OtaUnpackAirportData(OTA_Packet_s const * const otaPktPtr, FIFO_GENERIC<AP_MAX_BUF_LEN>  * outputBuffer);
 
