@@ -37,6 +37,8 @@
 // Serial
 #define GPIO_PIN_RCSIGNAL_RX hardware_pin(HARDWARE_serial_rx)
 #define GPIO_PIN_RCSIGNAL_TX hardware_pin(HARDWARE_serial_tx)
+#define GPIO_PIN_SERIAL1_RX hardware_pin(HARDWARE_serial1_rx)
+#define GPIO_PIN_SERIAL1_TX hardware_pin(HARDWARE_serial1_tx)
 
 // Radio
 #define GPIO_PIN_BUSY hardware_pin(HARDWARE_radio_busy)
@@ -53,10 +55,12 @@
 #define GPIO_PIN_RST hardware_pin(HARDWARE_radio_rst)
 #define GPIO_PIN_RST_2 hardware_pin(HARDWARE_radio_rst_2)
 #define GPIO_PIN_SCK hardware_pin(HARDWARE_radio_sck)
-#define USE_SX1280_DCDC
-#define OPT_USE_SX1280_DCDC hardware_flag(HARDWARE_radio_dcdc)
+#define USE_HARDWARE_DCDC
+#define OPT_USE_HARDWARE_DCDC hardware_flag(HARDWARE_radio_dcdc)
 #define USE_SX1276_RFO_HF
 #define OPT_USE_SX1276_RFO_HF hardware_flag(HARDWARE_radio_rfo_hf)
+#define LR1121_RFSW_CTRL hardware_u16_array(HARDWARE_radio_rfsw_ctrl)
+#define LR1121_RFSW_CTRL_COUNT hardware_int(HARDWARE_radio_rfsw_ctrl_count)
 
 // Radio Antenna
 #define GPIO_PIN_ANT_CTRL hardware_pin(HARDWARE_ant_ctrl)
@@ -87,7 +91,10 @@
 #define POWER_OUTPUT_DACWRITE (hardware_int(HARDWARE_power_control)==3)
 #define POWER_OUTPUT_FIXED -99
 #define POWER_OUTPUT_VALUES hardware_i16_array(HARDWARE_power_values)
+#define POWER_OUTPUT_VALUES_COUNT hardware_int(HARDWARE_power_values_count)
 #define POWER_OUTPUT_VALUES2 hardware_i16_array(HARDWARE_power_values2)
+#define POWER_OUTPUT_VALUES_DUAL hardware_i16_array(HARDWARE_power_values_dual)
+#define POWER_OUTPUT_VALUES_DUAL_COUNT hardware_int(HARDWARE_power_values_dual_count)
 
 // Input
 #define GPIO_PIN_BUTTON hardware_pin(HARDWARE_button)
@@ -141,4 +148,8 @@
 #define GPIO_PIN_SPI_VTX_SCK hardware_pin(HARDWARE_vtx_sck)
 #define VPD_VALUES_25MW hardware_u16_array(HARDWARE_vtx_amp_vpd_25mW)
 #define VPD_VALUES_100MW hardware_u16_array(HARDWARE_vtx_amp_vpd_100mW)
+#define PWM_VALUES_25MW hardware_u16_array(HARDWARE_vtx_amp_pwm_25mW)
+#define PWM_VALUES_100MW hardware_u16_array(HARDWARE_vtx_amp_pwm_100mW)
 #endif
+
+#define GPIO_PIN_FAN_EN hardware_pin(HARDWARE_misc_fan_en)

@@ -80,6 +80,7 @@ int8_t POWERMGNT::CurrentSX1280Power = 0;
 
 #if defined(TARGET_UNIFIED_TX) || defined(TARGET_UNIFIED_RX)
 static const int16_t *powerValues;
+static const int16_t *powerValuesDual;
 #else
 #if defined(POWER_OUTPUT_VALUES)
 static const int16_t powerValues[] = POWER_OUTPUT_VALUES;
@@ -226,6 +227,10 @@ void POWERMGNT::init()
 
 #if defined(TARGET_UNIFIED_TX) || defined(TARGET_UNIFIED_RX)
     powerValues = POWER_OUTPUT_VALUES;
+    if (POWER_OUTPUT_VALUES_DUAL != nullptr)
+    {
+        powerValuesDual = POWER_OUTPUT_VALUES_DUAL;
+    }
 #endif
 #if defined(POWER_OUTPUT_DAC)
     TxDAC.init();
@@ -281,13 +286,13 @@ void POWERMGNT::setPower(PowerLevels_e Power)
     analogWrite(GPIO_PIN_RFamp_APC2, powerValues[Power - MinPower]);
 #else
     #if defined(PLATFORM_ESP32)
-    if (POWER_OUTPUT_DACWRITE)
+    if (POWER_OUTPUT_DACWRITE && POWER_OUTPUT_VALUES != nullptr)
     {
         if (POWER_OUTPUT_VALUES2 != nullptr)
         {
             Radio.SetOutputPower(POWER_OUTPUT_VALUES2[Power - MinPower]);
         }
-        #if defined(PLATFORM_ESP32_S3)
+        #if defined(PLATFORM_ESP32_S3) || defined(PLATFORM_ESP32_C3)
         ERRLN("ESP32-S3 does not have a DAC");
         #else
         dacWrite(GPIO_PIN_RFamp_APC2, powerValues[Power - MinPower]);
@@ -305,6 +310,14 @@ void POWERMGNT::setPower(PowerLevels_e Power)
         Radio.SetOutputPower(CurrentSX1280Power);
     }
 #endif
+
+#if defined(RADIO_LR1121)
+    if (POWER_OUTPUT_VALUES_DUAL != nullptr)
+    {
+        Radio.SetOutputPower(powerValuesDual[Power - MinPower], false); // Set the high frequency power setting.
+    }
+#endif
+
     CurrentPower = Power;
     devicesTriggerEvent();
 }
